@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory & Store Management</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Authentication View -->
+    <main
+      id="auth-view"
+      class="view"
+      style="max-width: 480px; margin: 60px auto"
+    >
+      <section class="card">
+        <h2 style="text-align: center; margin-bottom: 1.5rem">System Portal</h2>
+
+        <!-- Auth Tabs -->
+        <div
+          style="
+            display: flex;
+            gap: 5px;
+            margin-bottom: 1.5rem;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 8px;
+          "
+        >
+          <button
+            id="tab-cust-login-btn"
+            onclick="switchAuthTab('cust-login')"
+            class="btn-primary"
+            style="flex: 1; font-size: 0.85rem"
+          >
+            Customer Login
+          </button>
+          <button
+            id="tab-cust-reg-btn"
+            onclick="switchAuthTab('cust-reg')"
+            class="btn-secondary"
+            style="flex: 1; font-size: 0.85rem"
+          >
+            Register
+          </button>
+          <button
+            id="tab-admin-login-btn"
+            onclick="switchAuthTab('admin-login')"
+            class="btn-secondary"
+            style="flex: 1; font-size: 0.85rem"
+          >
+            Admin Login
+          </button>
+        </div>
+
+        <!-- Customer Login Form -->
+        <form id="cust-login-form" onsubmit="handleAuth(event, 'login')">
+          <h3 style="margin-bottom: 1rem">Customer Sign In</h3>
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            class="form-input"
+            style="margin-bottom: 0.75rem"
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            class="form-input"
+            style="margin-bottom: 1.25rem"
+            required
+          />
+          <button type="submit" class="btn-primary" style="width: 100%">
+            Login to Shop
+          </button>
+        </form>
+
+        <!-- Customer Register Form -->
+        <form
+          id="cust-reg-form"
+          onsubmit="handleAuth(event, 'register')"
+          style="display: none"
+        >
+          <h3 style="margin-bottom: 1rem">Create New Customer Account</h3>
+          <input
+            type="text"
+            name="username"
+            placeholder="Choose Username"
+            class="form-input"
+            style="margin-bottom: 0.75rem"
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Choose Password"
+            class="form-input"
+            style="margin-bottom: 1.25rem"
+            required
+          />
+          <button type="submit" class="btn-success" style="width: 100%">
+            Create Account & Shop
+          </button>
+        </form>
+
+        <!-- Admin Login Form -->
+        <form
+          id="admin-login-form"
+          onsubmit="handleAuth(event, 'login')"
+          style="display: none"
+        >
+          <h3 style="margin-bottom: 1rem">Admin Portal</h3>
+          <input
+            type="text"
+            name="username"
+            placeholder="Admin Username"
+            class="form-input"
+            style="margin-bottom: 0.75rem"
+            value="admin"
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Admin Password"
+            class="form-input"
+            style="margin-bottom: 1.25rem"
+            required
+          />
+          <button
+            type="submit"
+            class="btn-primary"
+            style="width: 100%; background-color: #0f172a"
+          >
+            Login as Admin
+          </button>
+        </form>
+
+        <div id="auth-error" style="margin-top: 1rem"></div>
+      </section>
+    </main>
+
+    <!-- Store & Admin Dashboard -->
+    <div
+      id="dashboard-view"
+      class="view"
+      style="display: none; padding: 2rem; max-width: 1200px; margin: 0 auto"
+    >
+      <nav
+        id="navbar"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 2rem;
+          border-bottom: 1px solid #e2e8f0;
+          padding-bottom: 1rem;
+        "
+      >
+        <div>
+          <h1 id="view-title" style="margin: 0; display: inline-block">
+            Storefront
+          </h1>
+          <span
+            id="user-badge"
+            style="
+              margin-left: 10px;
+              background: #e0e7ff;
+              color: #4338ca;
+              padding: 4px 10px;
+              border-radius: 999px;
+              font-weight: 700;
+              font-size: 0.85rem;
+            "
+          ></span>
+        </div>
+        <button onclick="logout()" class="btn-secondary">Logout</button>
+      </nav>
+
+      <main
+        id="main-layout"
+        style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem"
+      >
+        <!-- Admin Management Controls (Admin-Only) -->
+        <section id="admin-forms">
+          <div class="card" style="margin-bottom: 1.5rem">
+            <h2>Add Product</h2>
+            <form onsubmit="saveProduct(event)">
+              <input
+                type="text"
+                name="name"
+                placeholder="Product Name"
+                class="form-input"
+                style="margin-bottom: 0.75rem"
+                required
+              />
+              <input
+                type="number"
+                name="quantity"
+                placeholder="Quantity"
+                class="form-input"
+                style="margin-bottom: 0.75rem"
+                required
+              />
+              <input
+                type="number"
+                step="0.01"
+                name="price"
+                placeholder="Price ($)"
+                class="form-input"
+                style="margin-bottom: 0.75rem"
+                required
+              />
+              <select
+                id="supplier-select"
+                name="SupplierId"
+                class="form-input"
+                style="margin-bottom: 0.75rem"
+              ></select>
+              <input
+                type="file"
+                name="image"
+                onchange="previewImage(event)"
+                class="form-input"
+                style="margin-bottom: 0.75rem"
+                accept="image/*"
+              />
+              <img
+                id="image-preview"
+                src=""
+                alt="Preview"
+                style="
+                  display: none;
+                  width: 100%;
+                  border-radius: 8px;
+                  margin-bottom: 0.75rem;
+                "
+              />
+              <button type="submit" class="btn-primary" style="width: 100%">
+                Add Product
+              </button>
+            </form>
+          </div>
+
+          <div class="card" style="margin-bottom: 1.5rem">
+            <h2>Add Supplier</h2>
+            <form onsubmit="saveSupplier(event)">
+              <input
+                type="text"
+                name="name"
+                placeholder="Supplier Name"
+                class="form-input"
+                style="margin-bottom: 0.75rem"
+                required
+              />
+              <input
+                type="text"
+                name="contact"
+                placeholder="Contact Info"
+                class="form-input"
+                style="margin-bottom: 0.75rem"
+                required
+              />
+              <button type="submit" class="btn-secondary" style="width: 100%">
+                Add Supplier
+              </button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h2>Manage Suppliers</h2>
+            <div id="supplier-list" style="margin-top: 1rem"></div>
+          </div>
+        </section>
+
+        <!-- Item Catalog -->
+        <section id="product-list-container">
+          <h2>Products Catalog</h2>
+          <div id="product-list" style="margin-top: 1rem"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
