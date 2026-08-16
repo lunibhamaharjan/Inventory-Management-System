@@ -102,10 +102,14 @@ function setupDashboard() {
     adminForms.style.display = "none";
     mainLayout.style.gridTemplateColumns = "1fr";
     viewTitle.textContent = "Customer Storefront";
-    loadSuppliers(); // Load suppliers for filter even if customer
+    loadSuppliers();
   }
 
   loadProducts();
+}
+
+function backToDashboard() {
+  setupDashboard();
 }
 
 function logout() {
@@ -184,20 +188,21 @@ function renderProducts(products) {
             <td style="padding: 8px;">${p.quantity}</td>
             <td style="padding: 8px;">$${p.price.toFixed(2)}</td>
             <td style="padding: 8px;">
-              ${
-                userRole === "user"
-                  ? `
-                <button onclick="purchaseProduct(${p.id})" class="btn-success" ${p.quantity < 1 ? "disabled" : ""}>
-                  ${p.quantity < 1 ? "Out of Stock" : "Buy Product"}
-                </button>
-              `
-                  : `
-                <div style="display: flex; gap: 6px;">
-                  <button onclick="addStock(${p.id})" class="btn-success" style="padding: 5px 10px; font-size: 0.8rem;">Add Stock</button>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button onclick="viewProduct(${p.id})" class="btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">View</button>
+                ${
+                  userRole === "user"
+                    ? `
+                  <button onclick="purchaseProduct(${p.id})" class="btn-success" ${p.quantity < 1 ? "disabled" : ""} style="padding: 5px 10px; font-size: 0.8rem;">
+                    ${p.quantity < 1 ? "Out of Stock" : "Buy"}
+                  </button>
+                `
+                    : `
+                  <button onclick="addStock(${p.id})" class="btn-success" style="padding: 5px 10px; font-size: 0.8rem;">Stock</button>
                   <button onclick="deleteProduct(${p.id})" class="btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">Delete</button>
-                </div>
-              `
-              }
+                `
+                }
+              </div>
             </td>
           </tr>
         `;
@@ -206,6 +211,52 @@ function renderProducts(products) {
       </tbody>
     </table>
   `;
+}
+
+function viewProduct(id) {
+  const product = allProducts.find((p) => p.id === id);
+  if (!product) return;
+
+  const nameEl = document.getElementById("detail-product-name");
+  const priceEl = document.getElementById("detail-product-price");
+  const qtyEl = document.getElementById("detail-product-quantity");
+  const supplierEl = document.getElementById("detail-product-supplier");
+  const imgEl = document.getElementById("detail-product-image");
+  const noImgEl = document.getElementById("detail-product-no-image");
+  const actionEl = document.getElementById("detail-product-action");
+
+  nameEl.textContent = product.name;
+  priceEl.textContent = `$${product.price.toFixed(2)}`;
+  qtyEl.textContent = product.quantity;
+  supplierEl.textContent = product.Supplier
+    ? product.Supplier.name
+    : "No Supplier Assigned";
+
+  if (product.image) {
+    imgEl.src = product.image;
+    imgEl.style.display = "block";
+    noImgEl.style.display = "none";
+  } else {
+    imgEl.style.display = "none";
+    noImgEl.style.display = "flex";
+  }
+
+  if (userRole === "user") {
+    actionEl.innerHTML = `
+      <button onclick="purchaseProduct(${product.id})" class="btn-success" ${product.quantity < 1 ? "disabled" : ""} style="width: 100%;">
+        ${product.quantity < 1 ? "Out of Stock" : "Buy Product"}
+      </button>
+    `;
+  } else {
+    actionEl.innerHTML = `
+      <div style="display: flex; gap: 10px;">
+        <button onclick="addStock(${product.id})" class="btn-success" style="flex: 1;">Add Stock</button>
+        <button onclick="deleteProduct(${product.id}); backToDashboard();" class="btn-danger" style="flex: 1;">Delete Product</button>
+      </div>
+    `;
+  }
+
+  showView("product-detail-view");
 }
 
 async function addStock(id) {
