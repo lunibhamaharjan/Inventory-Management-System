@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api";
+const API_URL = "/api";
 let token = localStorage.getItem("jwt_token") || null;
 let userRole = localStorage.getItem("user_role") || null;
 let userName = localStorage.getItem("user_name") || null;
