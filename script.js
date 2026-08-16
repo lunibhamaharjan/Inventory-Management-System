@@ -3,6 +3,7 @@ let token = localStorage.getItem("jwt_token") || null;
 let userRole = localStorage.getItem("user_role") || null;
 let userName = localStorage.getItem("user_name") || null;
 let allProducts = [];
+let allSuppliers = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   if (token) {
@@ -90,6 +91,7 @@ function setupDashboard() {
   const mainLayout = document.getElementById("main-layout");
   const userBadge = document.getElementById("user-badge");
   const viewTitle = document.getElementById("view-title");
+  const navSuppliersBtn = document.getElementById("nav-suppliers-btn");
 
   userBadge.textContent = `${userName} (${userRole.toUpperCase()})`;
 
@@ -97,11 +99,13 @@ function setupDashboard() {
     adminForms.style.display = "block";
     mainLayout.style.gridTemplateColumns = "1fr 2fr";
     viewTitle.textContent = "Inventory Management (Admin Portal)";
+    if (navSuppliersBtn) navSuppliersBtn.style.display = "inline-block";
     loadSuppliers();
   } else {
     adminForms.style.display = "none";
     mainLayout.style.gridTemplateColumns = "1fr";
     viewTitle.textContent = "Customer Storefront";
+    if (navSuppliersBtn) navSuppliersBtn.style.display = "none";
     loadSuppliers();
   }
 
@@ -259,6 +263,40 @@ function viewProduct(id) {
   showView("product-detail-view");
 }
 
+function showSupplierListView() {
+  const container = document.getElementById("full-supplier-table-container");
+  if (!container) return;
+
+  if (allSuppliers.length === 0) {
+    container.innerHTML = `<p style="padding: 1rem; color: #64748b;">No suppliers registered.</p>`;
+  } else {
+    container.innerHTML = `
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="text-align: left; border-bottom: 2px solid #e2e8f0;">
+            <th style="padding: 10px;">Supplier Name</th>
+            <th style="padding: 10px;">Contact (Email / Phone)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${allSuppliers
+            .map(
+              (s) => `
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+              <td style="padding: 10px; font-weight: 600;">${s.name}</td>
+              <td style="padding: 10px; color: #475569;">${s.contact || "No contact info provided"}</td>
+            </tr>
+          `,
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  showView("supplier-list-view");
+}
+
 async function addStock(id) {
   const amountStr = prompt("Enter quantity to add to stock:");
   if (!amountStr) return;
@@ -343,11 +381,11 @@ async function loadSuppliers() {
     const res = await fetch(`${API_URL}/suppliers`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const suppliers = await res.json();
+    allSuppliers = await res.json();
 
     const select = document.getElementById("supplier-select");
     if (select) {
-      select.innerHTML = suppliers
+      select.innerHTML = allSuppliers
         .map((s) => `<option value="${s.id}">${s.name}</option>`)
         .join("");
     }
@@ -357,7 +395,7 @@ async function loadSuppliers() {
       const currentVal = filterSelect.value;
       filterSelect.innerHTML =
         `<option value="">All Suppliers</option>` +
-        suppliers
+        allSuppliers
           .map((s) => `<option value="${s.id}">${s.name}</option>`)
           .join("");
       filterSelect.value = currentVal;
@@ -365,13 +403,13 @@ async function loadSuppliers() {
 
     const supplierList = document.getElementById("supplier-list");
     if (supplierList) {
-      if (suppliers.length === 0) {
+      if (allSuppliers.length === 0) {
         supplierList.innerHTML = `<p style="font-size: 0.9rem; color: #64748b;">No suppliers found.</p>`;
         return;
       }
       supplierList.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          ${suppliers
+          ${allSuppliers
             .map(
               (s) => `
           <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0;">

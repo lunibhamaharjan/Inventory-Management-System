@@ -176,7 +176,17 @@
             "
           ></span>
         </div>
-        <button onclick="logout()" class="btn-secondary">Logout</button>
+        <div style="display: flex; gap: 10px; align-items: center">
+          <button
+            id="nav-suppliers-btn"
+            onclick="showSupplierListView()"
+            class="btn-secondary"
+            style="display: none"
+          >
+            Suppliers List
+          </button>
+          <button onclick="logout()" class="btn-secondary">Logout</button>
+        </div>
       </nav>
 
       <main
@@ -218,6 +228,7 @@
                 name="SupplierId"
                 class="form-input"
                 style="margin-bottom: 0.75rem"
+                required
               ></select>
               <input
                 type="file"
@@ -258,7 +269,7 @@
               <input
                 type="text"
                 name="contact"
-                placeholder="Contact Info"
+                placeholder="Contact Info / Email / Phone"
                 class="form-input"
                 style="margin-bottom: 0.75rem"
                 required
@@ -403,6 +414,38 @@
           </div>
           <div id="detail-product-action" style="margin-top: 1rem"></div>
         </div>
+      </section>
+    </div>
+
+    <!-- Supplier List Page -->
+    <div
+      id="supplier-list-view"
+      class="view"
+      style="display: none; padding: 2rem; max-width: 900px; margin: 0 auto"
+    >
+      <nav
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 2rem;
+          border-bottom: 1px solid #e2e8f0;
+          padding-bottom: 1rem;
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(12px);
+          border-radius: 1rem;
+          padding: 1.5rem;
+        "
+      >
+        <h1 style="margin: 0; font-size: 1.5rem">Suppliers Directory</h1>
+        <button onclick="backToDashboard()" class="btn-secondary">
+          Back to Dashboard
+        </button>
+      </nav>
+
+      <section class="card">
+        <h2>All Registered Suppliers</h2>
+        <div id="full-supplier-table-container" style="margin-top: 1rem"></div>
       </section>
     </div>
 
