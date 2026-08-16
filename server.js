@@ -224,7 +224,6 @@ sequelize
   .then(async () => {
     console.log("Database synced.");
 
-    // Force existing or new 'admin' account to have role 'admin'
     let adminUser = await User.findOne({ where: { username: "admin" } });
     if (!adminUser) {
       const hashedAdmin = await bcrypt.hash("admin123", 10);

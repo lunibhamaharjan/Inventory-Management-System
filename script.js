@@ -140,21 +140,28 @@ async function loadProducts() {
       </thead>
       <tbody>
         ${products
-          .map(
-            (p) => `
-          <tr style="border-bottom: 1px solid #f1f5f9;">
+          .map((p) => {
+            const isLowStock = p.quantity < 5 && p.quantity > 0;
+            const isOutStock = p.quantity < 1;
+            const rowClass = isLowStock ? "low-stock-row" : "";
+
+            return `
+          <tr class="${rowClass}" style="border-bottom: 1px solid #f1f5f9;">
             <td style="padding: 8px;">
               ${p.image ? `<img src="${p.image}" alt="${p.name}" width="45" height="45" style="border-radius: 8px; object-fit: cover;"/>` : "N/A"}
             </td>
-            <td style="padding: 8px; font-weight: 600;">${p.name}</td>
+            <td style="padding: 8px; font-weight: 600;">
+              ${p.name}
+              ${isLowStock ? `<span class="badge-low-stock">Low Stock (< 5)</span>` : ""}
+            </td>
             <td style="padding: 8px;">${p.quantity}</td>
             <td style="padding: 8px;">$${p.price.toFixed(2)}</td>
             <td style="padding: 8px;">
               ${
                 userRole === "user"
                   ? `
-                <button onclick="purchaseProduct(${p.id})" class="btn-success" ${p.quantity < 1 ? "disabled" : ""}>
-                  ${p.quantity < 1 ? "Out of Stock" : "Buy Product"}
+                <button onclick="purchaseProduct(${p.id})" class="btn-success" ${isOutStock ? "disabled" : ""}>
+                  ${isOutStock ? "Out of Stock" : "Buy Product"}
                 </button>
               `
                   : `
@@ -163,8 +170,8 @@ async function loadProducts() {
               }
             </td>
           </tr>
-        `,
-          )
+        `;
+          })
           .join("")}
       </tbody>
     </table>
