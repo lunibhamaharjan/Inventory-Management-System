@@ -278,6 +278,29 @@
         <!-- Item Catalog -->
         <section id="product-list-container">
           <h2>Products Catalog</h2>
+
+          <!-- Search & Filter Controls -->
+          <div
+            style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap"
+          >
+            <input
+              type="text"
+              id="product-search"
+              placeholder="Search products by name..."
+              class="form-input"
+              style="flex: 2; min-width: 200px; margin-bottom: 0"
+              oninput="filterProducts()"
+            />
+            <select
+              id="supplier-filter"
+              class="form-input"
+              style="flex: 1; min-width: 150px; margin-bottom: 0"
+              onchange="filterProducts()"
+            >
+              <option value="">All Suppliers</option>
+            </select>
+          </div>
+
           <div id="product-list" style="margin-top: 1rem"></div>
         </section>
       </main>

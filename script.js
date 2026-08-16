@@ -2,6 +2,7 @@ const API_URL = "/api";
 let token = localStorage.getItem("jwt_token") || null;
 let userRole = localStorage.getItem("user_role") || null;
 let userName = localStorage.getItem("user_name") || null;
+let allProducts = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   if (token) {
@@ -101,6 +102,7 @@ function setupDashboard() {
     adminForms.style.display = "none";
     mainLayout.style.gridTemplateColumns = "1fr";
     viewTitle.textContent = "Customer Storefront";
+    loadSuppliers(); // Load suppliers for filter even if customer
   }
 
   loadProducts();
@@ -115,10 +117,36 @@ function logout() {
 }
 
 async function loadProducts() {
-  const res = await fetch(`${API_URL}/products`, {
-    headers: { Authorization: `Bearer ${token}` },
+  try {
+    const res = await fetch(`${API_URL}/products`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    allProducts = await res.json();
+    filterProducts();
+  } catch (err) {
+    console.error("Failed to load products:", err);
+  }
+}
+
+function filterProducts() {
+  const searchInput = document.getElementById("product-search");
+  const supplierFilter = document.getElementById("supplier-filter");
+
+  const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
+  const selectedSupplierId = supplierFilter ? supplierFilter.value : "";
+
+  const filtered = allProducts.filter((p) => {
+    const matchesName = p.name.toLowerCase().includes(searchTerm);
+    const matchesSupplier =
+      !selectedSupplierId ||
+      (p.SupplierId && p.SupplierId.toString() === selectedSupplierId);
+    return matchesName && matchesSupplier;
   });
-  const products = await res.json();
+
+  renderProducts(filtered);
+}
+
+function renderProducts(products) {
   const list = document.getElementById("product-list");
   if (!list) return;
 
@@ -260,29 +288,41 @@ async function deleteProduct(id) {
 }
 
 async function loadSuppliers() {
-  const res = await fetch(`${API_URL}/suppliers`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const suppliers = await res.json();
+  try {
+    const res = await fetch(`${API_URL}/suppliers`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const suppliers = await res.json();
 
-  const select = document.getElementById("supplier-select");
-  if (select) {
-    select.innerHTML = suppliers
-      .map((s) => `<option value="${s.id}">${s.name}</option>`)
-      .join("");
-  }
-
-  const supplierList = document.getElementById("supplier-list");
-  if (supplierList) {
-    if (suppliers.length === 0) {
-      supplierList.innerHTML = `<p style="font-size: 0.9rem; color: #64748b;">No suppliers found.</p>`;
-      return;
+    const select = document.getElementById("supplier-select");
+    if (select) {
+      select.innerHTML = suppliers
+        .map((s) => `<option value="${s.id}">${s.name}</option>`)
+        .join("");
     }
-    supplierList.innerHTML = `
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        ${suppliers
-          .map(
-            (s) => `
+
+    const filterSelect = document.getElementById("supplier-filter");
+    if (filterSelect) {
+      const currentVal = filterSelect.value;
+      filterSelect.innerHTML =
+        `<option value="">All Suppliers</option>` +
+        suppliers
+          .map((s) => `<option value="${s.id}">${s.name}</option>`)
+          .join("");
+      filterSelect.value = currentVal;
+    }
+
+    const supplierList = document.getElementById("supplier-list");
+    if (supplierList) {
+      if (suppliers.length === 0) {
+        supplierList.innerHTML = `<p style="font-size: 0.9rem; color: #64748b;">No suppliers found.</p>`;
+        return;
+      }
+      supplierList.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          ${suppliers
+            .map(
+              (s) => `
           <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
             <div>
               <strong>${s.name}</strong><br><small style="color: #64748b;">${s.contact || "No contact"}</small>
@@ -290,10 +330,13 @@ async function loadSuppliers() {
             <button onclick="deleteSupplier(${s.id})" class="btn-danger" style="padding: 4px 10px; font-size: 0.8rem;">Delete</button>
           </div>
         `,
-          )
-          .join("")}
-      </div>
-    `;
+            )
+            .join("")}
+        </div>
+      `;
+    }
+  } catch (err) {
+    console.error("Failed to load suppliers:", err);
   }
 }
 
@@ -332,6 +375,7 @@ async function deleteSupplier(id) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
     loadSuppliers();
+    loadProducts();
   } catch (err) {
     alert(`Error: ${err.message}`);
   }
