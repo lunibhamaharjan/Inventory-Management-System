@@ -154,6 +154,32 @@ app.post(
   },
 );
 
+// Add Stock Endpoint (Admin Only)
+app.patch(
+  "/api/products/:id/stock",
+  authenticate,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { addQuantity } = req.body;
+      const product = await Product.findByPk(req.params.id);
+      if (!product)
+        return res.status(404).json({ error: "Product not found." });
+
+      const amount = parseInt(addQuantity);
+      if (isNaN(amount) || amount <= 0) {
+        return res.status(400).json({ error: "Invalid stock amount to add." });
+      }
+
+      product.quantity += amount;
+      await product.save();
+      res.json({ message: "Stock added successfully!", product });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to update stock." });
+    }
+  },
+);
+
 app.post("/api/products/:id/purchase", authenticate, async (req, res) => {
   if (req.user.role === "admin") {
     return res.status(403).json({

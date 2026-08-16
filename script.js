@@ -142,7 +142,6 @@ async function loadProducts() {
         ${products
           .map((p) => {
             const isLowStock = p.quantity < 5 && p.quantity > 0;
-            const isOutStock = p.quantity < 1;
             const rowClass = isLowStock ? "low-stock-row" : "";
 
             return `
@@ -160,12 +159,15 @@ async function loadProducts() {
               ${
                 userRole === "user"
                   ? `
-                <button onclick="purchaseProduct(${p.id})" class="btn-success" ${isOutStock ? "disabled" : ""}>
-                  ${isOutStock ? "Out of Stock" : "Buy Product"}
+                <button onclick="purchaseProduct(${p.id})" class="btn-success" ${p.quantity < 1 ? "disabled" : ""}>
+                  ${p.quantity < 1 ? "Out of Stock" : "Buy Product"}
                 </button>
               `
                   : `
-                <button onclick="deleteProduct(${p.id})" class="btn-danger">Delete</button>
+                <div style="display: flex; gap: 6px;">
+                  <button onclick="addStock(${p.id})" class="btn-success" style="padding: 5px 10px; font-size: 0.8rem;">Add Stock</button>
+                  <button onclick="deleteProduct(${p.id})" class="btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">Delete</button>
+                </div>
               `
               }
             </td>
@@ -176,6 +178,33 @@ async function loadProducts() {
       </tbody>
     </table>
   `;
+}
+
+async function addStock(id) {
+  const amountStr = prompt("Enter quantity to add to stock:");
+  if (!amountStr) return;
+  const addQuantity = parseInt(amountStr);
+  if (isNaN(addQuantity) || addQuantity <= 0) {
+    alert("Please enter a valid positive number.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/products/${id}/stock`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ addQuantity }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    alert("Stock added successfully!");
+    loadProducts();
+  } catch (err) {
+    alert(`Error: ${err.message}`);
+  }
 }
 
 async function purchaseProduct(id) {
