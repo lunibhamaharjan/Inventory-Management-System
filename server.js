@@ -12,6 +12,9 @@ const JWT_SECRET = "your_super_secret_key_here";
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static frontend files (index.html, style.css, script.js) from the root directory
+app.use(express.static(path.join(__dirname)));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Configure Multer for Image Uploads
